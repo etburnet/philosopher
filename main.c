@@ -2,15 +2,19 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
+/*                                                    +:+ +:+        
+	+:+     */
+/*   By: eburnet <eburnet@student.42.fr>            +#+  +:+      
+	+#+        */
+/*                                                +#+#+#+#+#+  
+	+#+           */
 /*   Created: 2024/08/28 09:08:13 by eburnet           #+#    #+#             */
 /*   Updated: 2024/08/28 09:08:13 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philos.h"
+
 
 int	ft_check_args(int argc, char **argv, t_data *data)
 {
@@ -37,41 +41,41 @@ int	ft_check_args(int argc, char **argv, t_data *data)
 	return (0);
 }
 
-int	ft_init_philos(t_data *data)
+int	ft_init_philos(t_philo *philo)
 {
 	int i;
+	int ret;
 
-	i = 1; 
-	while (i <= data->nb_philo)
+	i = 1;
+	while (i <= philo->data->nb_philo)
 	{
-		data->philo->id = i;
-		data->philo->fork_id = i;
-		pthread_mutex_init(data->philo->fork_id, NULL);
-		data->philo->fork_status = 0;
-		data->philo->nb_eaten = 0;
-		data->philo->nb_philo = 0;
-		data->philo->t_die = data->t_die;
-		data->philo->t_eat = data->t_eat;
-		data->philo->t_sleep = data->t_sleep;
-		if (pthread_create(&data->philo[i].thread, NULL, ft_philos, &data->philo[i]) != 0)
-			return (1);
+		philo[i].id = i;
+		philo[i].fork_id = i;
+		pthread_mutex_init(philo[i].fork_id, NULL);
+		philo[i].fork_status = 0;
+		philo[i].nb_eaten = 0;
+		ret = pthread_create(&philo[i].thread, NULL, ft_philos,
+				&philo[i]);
+		if (ret != 0)
+			return (ret);
+		ret = pthread_detach(&philo[i].thread);
+		if (ret != 0)
+			return (ret);
+		i++;
 	}
 	return (0);
 }
 
 int	main(int argc, char *argv[])
 {
-	t_data		*data;
-	pthread_t	*t_monitor;
+	t_philo philo[200];
 
-	data = malloc(sizeof(t_data));
-	if (!data)
-		return (3);
-	if (ft_check_args(argc, argv, data) == 1)
+	philo->data = NULL;
+	if (ft_check_args(argc, argv, philo->data) != 0)
 		return (1);
-	if (pthread_create(&t_monitor, NULL, ft_monitor, data) != 0)
+	if (pthread_create(&philo->data->t_monitor, NULL, ft_monitor, philo->data) != 0)
 		return (1);
-	if (ft_init_philos(data) == 1)
+	if (ft_init_philos(philo) != 0)
 		return (1);
 	return (0);
 }
