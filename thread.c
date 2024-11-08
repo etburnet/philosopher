@@ -6,99 +6,88 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/07 11:15:02 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/07 16:36:11 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/08 16:50:48 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philos.h"
 
-int	ft_lock(t_philo *philo)
+void	ft_lock(t_philo *philo)
 {
-	if (philo[philo->id].fork_status == 0
-		&& philo[philo->id +1].fork_status == 0)
-	{
-		pthread_mutex_lock(philo[philo->id].fork_id);
-		pthread_mutex_lock(philo[philo->id + 1].fork_id);
-		return (0);
-	}
-	else
-		return (1);
+	ft_putstr_fd("Lock\n", 1);
+	pthread_mutex_lock(philo->r_fork);
+	pthread_mutex_lock(&philo->l_fork);
 }
 
 void	ft_unlock(t_philo *philo)
 {
-	pthread_mutex_unlock(philo[philo->id].fork_id);
-	pthread_mutex_unlock(philo[philo->id + 1].fork_id);
+	ft_putstr_fd("Unlock\n", 1);
+	pthread_mutex_unlock(philo->r_fork);
+	pthread_mutex_unlock(&philo->l_fork);
 }
 
-int	ft_monitor(t_data *data)
+/* int	ft_monitor(t_philo philo)
 {
-	if (data->philo->id >= 0 && data->philo->id < data->philo->nb_philo)
-	{
-		if (ft_lock(data->philo[actuall]) == 0)
-		{
-			data->philo[actuall].fork_status = 1;
-			data->philo[actuall].philo[data->philo->id + 1].fork_status = 1;
-			return (0);
-		}
-		else
-			return (1);
-	}
-	else if (data->philo[actuall].id == data->nb_philo)
-	{
-		if (ft_lock(data->philo[actuall]) == 0)
-		{
-			data->philo[data->philo->id].fork_status = 1;
-			data->philo[0].fork_status = 1;
-			return (0);
-		}
-		else
-			return (1);
-	}
-	return (1);
-}
+
+} */
 
 int	ft_eat(t_philo *philo)
 {
-	int	ret;
-
-	ret = pthread_join(philo->t_monitor, ret);
-	if (ret == 0)
-	{
-		if (usleep(philo->data->t_eat) == -1)
-			return (puts, 3);
-		philo->nb_eaten++;
-		ft_unlock(philo);
-		return (0);
-	}
-	return (1);
-}
-
-void	ft_think(t_philo *philo)
-{
-	if (usleep(500) == -1)
-		return (puts, 3);
-}
-
-void	ft_sleep(t_philo *philo)
-{
-	if (usleep(philo->data->t_sleep) == -1)
-		return (puts, 3);
-}
-
-int	ft_philos(t_philo *philo)
-{
-	int	var_end;
-
-	var_end = 1;
-	while (var_end == 1)
-	{
-		if (ft_eat(philo) == 3)
-			return (3);
-		ft_sleep(philo);
-		if (ft_eat(philo) == 3)
-			return (3);
-		ft_think(philo);
-	}
+	ft_putstr_fd("Eating\n", 1);
+	ft_lock(philo);
+	if (usleep(philo->data->t_eat) == -1)
+		return (3);
+	philo->nb_eaten++;
+	ft_unlock(philo);
 	return (0);
+}
+
+int	ft_think()
+{
+	ft_putstr_fd("Thinking\n", 1);
+	if (usleep(500) == -1)
+		return (3);
+	return (0);
+}
+
+int	ft_sleep(t_philo *philo)
+{
+	ft_putstr_fd("Sleeping\n", 1);
+	if (usleep(philo->data->t_sleep) == -1)
+		return (3);
+	return (0);
+}
+
+void	*ft_philos(void *p)
+{
+	t_philo *philo;
+	int		*ret;
+
+	ret = 0;
+	philo = (t_philo *)&p;
+	while (1)
+	{
+		ft_putstr_fd("ft_philo id: ", 1);
+		ft_putstr_fd(ft_itoa(philo->id), 1);
+		ft_putstr_fd("\n", 1);
+		if (philo->id % 2 == 0)
+		{
+			*ret = ft_eat(philo);
+			if (*ret == 3)
+				return (ret);
+		}
+		*ret = ft_sleep(philo);
+		if (*ret == 3)
+			return (ret);
+		if (philo->id % 2 != 0)
+		{
+			*ret = ft_eat(philo);
+			if (*ret == 3)
+				return (ret);
+		}
+		*ret = ft_think();
+		if (*ret == 3)
+			return (ret);
+	}
+	return (ret);
 }

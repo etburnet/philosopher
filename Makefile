@@ -12,10 +12,10 @@
 
 NAME = philos
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g3
-SRCS = main.c
+CFLAGS = -Wall -Wextra -Werror -g3 -pthread
+SRCS = main.c philos_utils.c thread.c
 OBJS = $(SRCS:.c=.o)
-HEADERS = ft_philos.h philos_utils.c
+HEADERS = ft_philos.h
 
 all: $(NAME)
 
