@@ -40,13 +40,13 @@ int	ft_check_args(int argc, char **argv, t_philo *philo)
 	}
 	else
 		philo->data->nb_eat = 0;
+	pthread_mutex_init(&philo->data->writing, NULL);
 	return (0);
 }
 
 int	ft_init_philos(t_philo *philo)
 {
 	int i;
-	pthread_mutex_t	*p_fork;
 	struct timeval start;
 
 	i = 1;
@@ -55,16 +55,16 @@ int	ft_init_philos(t_philo *philo)
 	philo->data->t_start = start.tv_usec;
 	while (i <= philo->data->nb_philo)
 	{
+		philo[i].data = philo->data;
 		philo[i].id = i;
-		if (i != 1)
-			philo[i].r_fork = p_fork;
+		if (i > 1)
+			philo[i].r_fork = &philo[i - 1].l_fork;
 		pthread_mutex_init(&philo[i].l_fork, NULL);
 		philo[i].fork_status = 0;
 		philo[i].nb_eaten = 0;
-		p_fork = &philo[i].l_fork;
 		i++;
 	}
-	philo[1].r_fork = p_fork;
+	philo[1].r_fork = &philo[philo->data->nb_philo].l_fork;
 	return (0);
 }
 

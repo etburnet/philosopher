@@ -21,6 +21,7 @@
 typedef struct	s_data
 {
 	pthread_t	t_monitor;
+	pthread_mutex_t writing;
 	int	nb_philo;
 	int	t_die;
 	int	t_start;
