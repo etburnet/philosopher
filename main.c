@@ -2,14 +2,11 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+        
-	+:+     */
-/*   By: eburnet <eburnet@student.42.fr>            +#+  +:+      
-	+#+        */
-/*                                                +#+#+#+#+#+  
-	+#+           */
-/*   Created: 2024/08/28 09:08:13 by eburnet           #+#    #+#             */
-/*   Updated: 2024/08/28 09:08:13 by eburnet          ###   ########.fr       */
+/*                                                    +:+ +:+         +:+     */
+/*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/11/12 13:02:25 by eburnet           #+#    #+#             */
+/*   Updated: 2024/11/12 13:02:25 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +36,11 @@ int	ft_check_args(int argc, char **argv, t_philo *philo)
 			return (printf("nb_eat, invalid arg\n"), 1);
 	}
 	else
-		philo->data->nb_eat = 0;
+		philo->data->nb_eat = -1;
 	pthread_mutex_init(&philo->data->writing, NULL);
+	philo->data->t_think = philo->data->t_die - philo->data->t_eat - philo->data->t_sleep;
+	printf("think %d\n", philo->data->t_think);
+	philo->data->live = 1;
 	return (0);
 }
 
@@ -62,6 +62,7 @@ int	ft_init_philos(t_philo *philo)
 		pthread_mutex_init(&philo[i].l_fork, NULL);
 		philo[i].fork_status = 0;
 		philo[i].nb_eaten = 0;
+		philo[i].t_last_eat = start.tv_usec;
 		i++;
 	}
 	philo[1].r_fork = &philo[philo->data->nb_philo].l_fork;
@@ -72,6 +73,7 @@ int	main(int argc, char *argv[])
 {
 	t_philo philo[200];
 	int i;
+	int ret;
 
 	i = 1;
 	philo->data = malloc(sizeof(t_data));
@@ -81,15 +83,15 @@ int	main(int argc, char *argv[])
 		return (1);
 	if (ft_init_philos(philo) != 0)
 		return (1);
-/* 	if (pthread_create(&philo->data->t_monitor, NULL, ft_monitor, philo->data) != 0)
-		return (1); */
 	while (i <= philo->data->nb_philo)
 	{
 		if (pthread_create(&philo[i].thread, NULL, ft_philos, &philo[i]) != 0)
 			return (1);
 		i++;
 	}
+	ret = ft_monitor(philo);
 	i = 1;
+	philo->data->live = 0;
 	while (i <= philo->data->nb_philo)
 	{
 		if (pthread_join(philo[i].thread, NULL) != 0)
@@ -97,7 +99,9 @@ int	main(int argc, char *argv[])
 		pthread_mutex_destroy(&philo[i].l_fork);
 		i++;
 	}
-/* 	if (pthread_join(&philo->data->t_monitor, NULL) != 0)
-		return (1); */
-	return (0);
+	if (ret == 1)
+		printf("%s\n", philo->data->msg);
+	if (ret == -1)
+		printf("%d ms %d died\n", philo->data->msg_t, philo->data->msg_id);
+	return (ret);
 }

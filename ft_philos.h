@@ -24,10 +24,15 @@ typedef struct	s_data
 	pthread_mutex_t writing;
 	int	nb_philo;
 	int	t_die;
-	int	t_start;
 	int	t_eat;
+	int	t_think;
+	int	t_start;
 	int	t_sleep;
+	int	live;
 	int	nb_eat;
+	char	*msg;
+	int		msg_id;
+	int		msg_t;
 } t_data;
 
 typedef struct	s_philo
@@ -38,16 +43,19 @@ typedef struct	s_philo
 	long int	nb_eaten;
 	int			fork_status;
 	int			nb_philo;
+	int			t_last_eat;
 	pthread_mutex_t l_fork;
 	pthread_mutex_t *r_fork;
 } t_philo;
 
 int		ft_atoi(char *str);
+int		ft_strlen(char *str);
 int		ft_isdigit(char n);
 void	ft_putstr_fd(char *s, int fd);
 void	*ft_philos(void *p);
 char	*ft_strdup(const char *s);
 char	*ft_itoa(int n);
-// int		ft_monitor(t_philo philo);
+int		ft_monitor(t_philo *philo);
+size_t	ft_strlcat(char *dst, const char *src, size_t size);
 
 #endif

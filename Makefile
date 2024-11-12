@@ -13,7 +13,7 @@
 NAME = philos
 CC = cc
 CFLAGS = -Wall -Wextra -Werror -g3 -pthread
-SRCS = main.c philos_utils.c thread.c
+SRCS = main.c philos_utils.c thread.c monitor.c
 OBJS = $(SRCS:.c=.o)
 HEADERS = ft_philos.h
 
