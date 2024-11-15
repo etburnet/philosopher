@@ -6,7 +6,7 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/12 11:05:27 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/12 15:08:33 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/15 12:18:24 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,17 @@
 int	ft_is_dead(t_philo *philo, int i)
 {
 	struct timeval time;
+	long int die;
 	
 	if (gettimeofday(&time, NULL) != 0)
-		return (1);
-	if (philo[i].data->t_die < (time.tv_usec - philo[i].t_last_eat))
+		return (-1);
+	if (philo[i].data->t_die < ((time.tv_sec * 1000 + time.tv_usec / 1000) - philo[i].t_last_eat))
 	{
-		philo->data->msg_t =  time.tv_usec - philo->data->t_start;
-		philo->data->msg_id = philo[i].id;
+		philo->data->live = 0;
+		die = (time.tv_sec * 1000 + time.tv_usec / 1000) - philo->data->t_start;
+		pthread_mutex_lock(&philo->data->writing);
+		printf("%ld %ld died\n", die, philo[i].id);
+		pthread_mutex_unlock(&philo->data->writing);
 		return (1);
 	}
 	return (0);
@@ -29,16 +33,20 @@ int	ft_is_dead(t_philo *philo, int i)
 
 int	ft_monitor(t_philo *philo)
 {
-	int	i;
-	int	eat;
+	long int	i;
+	long int	eat;
+	int			ret;
 
-	eat = 0;
 	while (1)
 	{
-		i = 0;
+		eat = 0;
+		i = 1;
 		while (i <= philo->data->nb_philo)
 		{
-			if (ft_is_dead(philo, i) != 0)
+			ret = ft_is_dead(philo, i);
+			if (ret == 1)
+				return (1);
+			else if (ret == -1)
 				return (-1);
 			if (philo[i].nb_eaten == philo->data->nb_eat)
 				eat++;
@@ -47,8 +55,9 @@ int	ft_monitor(t_philo *philo)
 		if (philo->data->nb_philo == eat)
 		{
 			philo->data->msg = ft_strdup("All philos have eaten enough !");
-			return (1);
+			return (2);
 		}
+		//usleep(400);
 	}
 	return (0);
 }

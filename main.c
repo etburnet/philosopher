@@ -12,7 +12,6 @@
 
 #include "ft_philos.h"
 
-
 int	ft_check_args(int argc, char **argv, t_philo *philo)
 {
 	if (argc < 5 || argc > 6)
@@ -38,8 +37,9 @@ int	ft_check_args(int argc, char **argv, t_philo *philo)
 	else
 		philo->data->nb_eat = -1;
 	pthread_mutex_init(&philo->data->writing, NULL);
-	philo->data->t_think = philo->data->t_die - philo->data->t_eat - philo->data->t_sleep;
-	printf("think %d\n", philo->data->t_think);
+	philo->data->t_think = (philo->data->t_die - (philo->data->t_eat + philo->data->t_sleep)) / 2;
+	if (philo->data->t_think < 0)
+		philo->data->t_think = 1;
 	philo->data->live = 1;
 	return (0);
 }
@@ -52,7 +52,7 @@ int	ft_init_philos(t_philo *philo)
 	i = 1;
 	if (gettimeofday(&start, NULL) != 0)
 		return (1);
-	philo->data->t_start = start.tv_usec;
+	philo->data->t_start = (start.tv_sec * 1000 + start.tv_usec / 1000);
 	while (i <= philo->data->nb_philo)
 	{
 		philo[i].data = philo->data;
@@ -62,10 +62,12 @@ int	ft_init_philos(t_philo *philo)
 		pthread_mutex_init(&philo[i].l_fork, NULL);
 		philo[i].fork_status = 0;
 		philo[i].nb_eaten = 0;
-		philo[i].t_last_eat = start.tv_usec;
+		philo[i].t_last_eat = (start.tv_sec * 1000 + start.tv_usec / 1000);
 		i++;
 	}
 	philo[1].r_fork = &philo[philo->data->nb_philo].l_fork;
+	if (philo->data->nb_philo == 1)
+		philo[1].r_fork = NULL;
 	return (0);
 }
 
@@ -74,34 +76,40 @@ int	main(int argc, char *argv[])
 	t_philo philo[200];
 	int i;
 	int ret;
+	struct timeval time;
 
+	if (gettimeofday(&time, NULL) != 0)
+		return (1);
 	i = 1;
 	philo->data = malloc(sizeof(t_data));
 	if (philo->data == NULL)
 		return (3);
 	if (ft_check_args(argc, argv, philo) != 0)
-		return (1);
+		return (free(philo->data), 1);
 	if (ft_init_philos(philo) != 0)
-		return (1);
+		return (free(philo->data), 1);
 	while (i <= philo->data->nb_philo)
 	{
 		if (pthread_create(&philo[i].thread, NULL, ft_philos, &philo[i]) != 0)
-			return (1);
+			return (free(philo->data), 1);
 		i++;
 	}
 	ret = ft_monitor(philo);
-	i = 1;
 	philo->data->live = 0;
+	i = 1;
 	while (i <= philo->data->nb_philo)
 	{
 		if (pthread_join(philo[i].thread, NULL) != 0)
-			return (1);
+			return (free(philo->data), 1);
 		pthread_mutex_destroy(&philo[i].l_fork);
 		i++;
 	}
-	if (ret == 1)
+	if (ret == 2)
+	{
+		pthread_mutex_lock(&philo->data->writing);
 		printf("%s\n", philo->data->msg);
-	if (ret == -1)
-		printf("%d ms %d died\n", philo->data->msg_t, philo->data->msg_id);
-	return (ret);
+		pthread_mutex_unlock(&philo->data->writing);
+		free(philo->data->msg);
+	}
+	return (free(philo->data), ret);
 }

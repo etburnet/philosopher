@@ -22,28 +22,27 @@ typedef struct	s_data
 {
 	pthread_t	t_monitor;
 	pthread_mutex_t writing;
-	int	nb_philo;
-	int	t_die;
-	int	t_eat;
-	int	t_think;
-	int	t_start;
-	int	t_sleep;
-	int	live;
-	int	nb_eat;
-	char	*msg;
-	int		msg_id;
-	int		msg_t;
+	long int	nb_philo;
+	long int	t_die;
+	long int	t_eat;
+	long int	t_think;
+	long int	t_start;
+	long int	t_sleep;
+	int			live;
+	long int	nb_eat;
+	char		*msg;
+	long int	msg_id;
 } t_data;
 
 typedef struct	s_philo
 {
 	t_data		*data;
 	pthread_t 	thread;
-	int			 id;
+	long int	id;
 	long int	nb_eaten;
 	int			fork_status;
-	int			nb_philo;
-	int			t_last_eat;
+	long int 	nb_philo;
+	long int	t_last_eat;
 	pthread_mutex_t l_fork;
 	pthread_mutex_t *r_fork;
 } t_philo;

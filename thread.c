@@ -6,61 +6,53 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/07 11:15:02 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/12 15:22:32 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/15 11:55:21 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_philos.h"
 
-int	ft_lock(t_philo *philo)
+int	ft_log(t_philo *philo, struct timeval time, char *str)
 {
-	struct timeval time;
+	char			*itoa;
 	
-	if (philo->r_fork == NULL || &(philo->l_fork) == NULL)
-		return (1);
-	pthread_mutex_lock(philo->r_fork);
-	if (gettimeofday(&time, NULL) != 0)
+	if (philo->data->live == 0)
 		return (1);
 	pthread_mutex_lock(&philo->data->writing);
-	ft_putstr_fd(ft_itoa(time.tv_usec- philo->data->t_start), 1);
-	ft_putstr_fd(" ms ", 1);
-	ft_putstr_fd(ft_itoa(philo->id), 1);
-	ft_putstr_fd(" has taken right fork\n", 1);
-	pthread_mutex_unlock(&philo->data->writing);
-	pthread_mutex_lock(&philo->l_fork);
-	if (gettimeofday(&time, NULL) != 0)
-		return (1);
-	pthread_mutex_lock(&philo->data->writing);
-	ft_putstr_fd(ft_itoa(time.tv_usec - philo->data->t_start), 1);
-	ft_putstr_fd(" ms ", 1);
-	ft_putstr_fd(ft_itoa(philo->id), 1);
-	ft_putstr_fd(" has taken left fork\n", 1);
+	itoa = ft_itoa((time.tv_sec * 1000 + time.tv_usec / 1000) - philo->data->t_start);
+	if (itoa == NULL)
+		return (3);
+	ft_putstr_fd(itoa, 1);
+	ft_putstr_fd(" ", 1);
+	free(itoa);
+	itoa = ft_itoa(philo->id);
+	if (itoa == NULL)
+		return (3);
+	ft_putstr_fd(itoa, 1);
+	free(itoa);
+	ft_putstr_fd(str, 1);
 	pthread_mutex_unlock(&philo->data->writing);
 	return (0);
 }
 
-int	ft_unlock(t_philo *philo)
+int	ft_lock(t_philo *philo)
 {
 	struct timeval time;
-	
-	pthread_mutex_unlock(philo->r_fork);
+
+	pthread_mutex_lock(&philo->l_fork);
+	// philo->fork_status = 1;
 	if (gettimeofday(&time, NULL) != 0)
 		return (1);
-	pthread_mutex_lock(&philo->data->writing);
-	ft_putstr_fd(ft_itoa(time.tv_usec - philo->data->t_start), 1);
-	ft_putstr_fd(" ms ", 1);
-	ft_putstr_fd(ft_itoa(philo->id), 1);
-	ft_putstr_fd(" has dropped right fork\n", 1);
-	pthread_mutex_unlock(&philo->data->writing);
-	pthread_mutex_unlock(&philo->l_fork);
+	if (ft_log(philo, time, " has taken a fork\n") == 3)
+		return (3);
+	if (philo->r_fork == NULL)
+		return (pthread_mutex_unlock(&philo->l_fork), 1);
+	pthread_mutex_lock(philo->r_fork);
+	// *philo->fork_status = 1;
 	if (gettimeofday(&time, NULL) != 0)
 		return (1);
-	pthread_mutex_lock(&philo->data->writing);
-	ft_putstr_fd(ft_itoa(time.tv_usec - philo->data->t_start), 1);
-	ft_putstr_fd(" ms ", 1);
-	ft_putstr_fd(ft_itoa(philo->id), 1);
-	ft_putstr_fd(" has dropped left fork\n", 1);
-	pthread_mutex_unlock(&philo->data->writing);
+	if (ft_log(philo, time, " has taken a fork\n") == 3)
+		return (3);
 	return (0);
 }
 
@@ -68,40 +60,34 @@ int	ft_eat(t_philo *philo)
 {
 	struct timeval time;
 
-	if (gettimeofday(&time, NULL) != 0)
-		return (1);
 	if (ft_lock(philo) == 1)
 		return (1);
-	pthread_mutex_lock(&philo->data->writing);
-	ft_putstr_fd(ft_itoa(time.tv_usec - philo->data->t_start), 1);
-	ft_putstr_fd(" ms ", 1);
-	ft_putstr_fd(ft_itoa(philo->id), 1);
-	ft_putstr_fd(" is eating\n", 1);
-	pthread_mutex_unlock(&philo->data->writing);
 	if (gettimeofday(&time, NULL) != 0)
 		return (1);
-	philo->t_last_eat = time.tv_usec;
-	if (usleep(philo->data->t_eat) == -1)
+	if (ft_log(philo, time, " is eating\n") == 3)
+		return (3);
+	if (gettimeofday(&time, NULL) != 0)
+		return (1);
+	philo->t_last_eat = (time.tv_sec * 1000 + time.tv_usec / 1000);
+	if (usleep(philo->data->t_eat * 1000) == -1)
 		return (3);
 	philo->nb_eaten++;
-	if (ft_unlock(philo) == 1)
-		return (1);
+	pthread_mutex_unlock(philo->r_fork);
+	// philo->fork_status = 0;
+	pthread_mutex_unlock(&philo->l_fork);
+	// *philo->fork_status = 0;
 	return (0);
 }
 
 int	ft_think(t_philo *philo)
 {
-	struct timeval time;
+	struct timeval	time;
 	
 	if (gettimeofday(&time, NULL) != 0)
 		return (1);
-	pthread_mutex_lock(&philo->data->writing);
-	ft_putstr_fd(ft_itoa(time.tv_usec - philo->data->t_start), 1);
-	ft_putstr_fd(" ms ", 1);
-	ft_putstr_fd(ft_itoa(philo->id), 1);
-	ft_putstr_fd(" is thinking\n", 1);
-	pthread_mutex_unlock(&philo->data->writing);
-	if (usleep(philo->data->t_think) == -1)
+	if (ft_log(philo, time, " is thinking\n") == 3)
+		return (3);
+	if (usleep(philo->data->t_think * 1000) == -1)
 		return (3);
 	return (0);
 }
@@ -112,17 +98,13 @@ int	ft_sleep(t_philo *philo)
 	
 	if (gettimeofday(&time, NULL) != 0)
 		return (1);
-	pthread_mutex_lock(&philo->data->writing);
-	ft_putstr_fd(ft_itoa(time.tv_usec - philo->data->t_start), 1);
-	ft_putstr_fd(" ms ", 1);
-	ft_putstr_fd(ft_itoa(philo->id), 1);
-	ft_putstr_fd(" is sleeping\n", 1);
-	pthread_mutex_unlock(&philo->data->writing);
-	if (usleep(philo->data->t_sleep) == -1)
+	if (ft_log(philo, time, " is sleeping\n") == 3)
+		return (3);
+	if (usleep(philo->data->t_sleep * 1000) == -1)
 		return (3);
 	return (0);
 }
-
+ 
 void	*ft_philos(void *p)
 {
 	t_philo *philo;
@@ -131,24 +113,39 @@ void	*ft_philos(void *p)
 	philo = (t_philo *)p;
 	while (philo->data->live)
 	{
-		if (philo->id % 2 == 0)
+		if (philo->id == philo->data->nb_philo && philo->id % 2 != 0)
 		{
+			ret = ft_sleep(philo);
+			if (ret == 3)
+				return (NULL);
 			ret = ft_eat(philo);
+			if (ret != 0)
+				return (NULL);
+			ret = ft_think(philo);
 			if (ret == 3)
 				return (NULL);
 		}
-		ret = ft_sleep(philo);
-		if (ret == 3)
-			return (NULL);
-		if (philo->id % 2 != 0)
+		else
 		{
-			ret = ft_eat(philo);
+			if (philo->id % 2 != 0)
+			{
+				ret = ft_eat(philo);
+				if (ret != 0)
+					return (NULL);
+			}
+			ret = ft_sleep(philo);
 			if (ret == 3)
 				return (NULL);
+			ret = ft_think(philo);
+			if (ret == 3)
+				return (NULL);
+			if (philo->id % 2 == 0)
+			{
+				ret = ft_eat(philo);
+				if (ret != 0)
+					return (NULL);
+			}
 		}
-		ret = ft_think(philo);
-		if (ret == 3)
-			return (NULL);
 	}
 	return (NULL);
 }
