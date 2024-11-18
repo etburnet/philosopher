@@ -6,7 +6,7 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/12 11:05:27 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/18 12:07:57 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/18 15:36:15 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 int	ft_is_dead(t_philo *philo, int i)
 {
 	struct timeval time;
+	long int die;
 	long int die;
 	
 	if (gettimeofday(&time, NULL) != 0)
@@ -40,13 +41,22 @@ int	ft_monitor(t_philo *philo)
 	long int	i;
 	long int	eat;
 	int			ret;
+	long int	i;
+	long int	eat;
+	int			ret;
 
 	while (1)
 	{
 		eat = 0;
 		i = 1;
+		eat = 0;
+		i = 1;
 		while (i <= philo->data->nb_philo)
 		{
+			ret = ft_is_dead(philo, i);
+			if (ret == 1)
+				return (1);
+			else if (ret == -1)
 			ret = ft_is_dead(philo, i);
 			if (ret == 1)
 				return (1);
@@ -61,6 +71,7 @@ int	ft_monitor(t_philo *philo)
 		if (philo->data->nb_philo == eat)
 		{
 			philo->data->msg = ft_strdup("All philos have eaten enough !");
+			return (2);
 			return (2);
 		}
 		// usleep(400);

@@ -32,12 +32,23 @@ typedef struct	s_data
 	long int	nb_eat;
 	char		*msg;
 	long int	msg_id;
+	long int	nb_philo;
+	long int	t_die;
+	long int	t_eat;
+	long int	t_think;
+	long int	t_start;
+	long int	t_sleep;
+	int			live;
+	long int	nb_eat;
+	char		*msg;
+	long int	msg_id;
 } t_data;
 
 typedef struct	s_philo
 {
 	t_data		*data;
 	pthread_t 	thread;
+	long int	id;
 	long int	id;
 	long int	nb_eaten;
 	int			fork_status;
