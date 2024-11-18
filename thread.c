@@ -6,7 +6,7 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/07 11:15:02 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/18 15:36:32 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/18 15:37:00 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,21 +17,8 @@ int	ft_log(t_philo *philo, struct timeval time, char *str)
 	char			*itoa;
 	
 	if (philo->data->live == 0)
-	if (philo->data->live == 0)
 		return (1);
 	pthread_mutex_lock(&philo->data->writing);
-	itoa = ft_itoa((time.tv_sec * 1000 + time.tv_usec / 1000) - philo->data->t_start);
-	if (itoa == NULL)
-		return (3);
-	ft_putstr_fd(itoa, 1);
-	ft_putstr_fd(" ", 1);
-	free(itoa);
-	itoa = ft_itoa(philo->id);
-	if (itoa == NULL)
-		return (3);
-	ft_putstr_fd(itoa, 1);
-	free(itoa);
-	ft_putstr_fd(str, 1);
 	itoa = ft_itoa((time.tv_sec * 1000 + time.tv_usec / 1000) - philo->data->t_start);
 	if (itoa == NULL)
 		return (3);
@@ -49,7 +36,6 @@ int	ft_log(t_philo *philo, struct timeval time, char *str)
 }
 
 int	ft_lock(t_philo *philo)
-int	ft_lock(t_philo *philo)
 {
 	struct timeval time;
 
@@ -63,8 +49,6 @@ int	ft_lock(t_philo *philo)
 	pthread_mutex_lock(philo->r_fork);
 	if (gettimeofday(&time, NULL) != 0)
 		return (1);
-	if (ft_log(philo, time, " has taken a fork\n") == 3)
-		return (3);
 	if (ft_log(philo, time, " has taken a fork\n") == 3)
 		return (3);
 	return (0);
@@ -98,13 +82,9 @@ int	ft_eat(t_philo *philo)
 int	ft_think(t_philo *philo)
 {
 	struct timeval	time;
-	struct timeval	time;
 	
 	if (gettimeofday(&time, NULL) != 0)
 		return (1);
-	if (ft_log(philo, time, " is thinking\n") == 3)
-		return (3);
-	if (usleep(philo->data->t_think * 1000) == -1)
 	if (ft_log(philo, time, " is thinking\n") == 3)
 		return (3);
 	if (usleep(philo->data->t_think * 1000) == -1)
@@ -121,13 +101,9 @@ int	ft_sleep(t_philo *philo)
 	if (ft_log(philo, time, " is sleeping\n") == 3)
 		return (3);
 	if (usleep(philo->data->t_sleep * 1000) == -1)
-	if (ft_log(philo, time, " is sleeping\n") == 3)
-		return (3);
-	if (usleep(philo->data->t_sleep * 1000) == -1)
 		return (3);
 	return (0);
 }
- 
  
 void	*ft_philos(void *p)
 {
