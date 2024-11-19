@@ -6,7 +6,7 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/12 11:05:27 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/19 14:48:43 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/19 15:17:03 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ int	ft_monitor(t_philo *philo)
 			philo->data->msg = ft_strdup("All philos have eaten enough !");
 			return (2);
 		}
-		usleep(400);
+		usleep(8000);
 	}
 	return (0);
 }
