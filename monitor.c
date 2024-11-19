@@ -6,33 +6,56 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/12 11:05:27 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/18 12:07:57 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/19 14:48:43 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_philos.h"
+#include "philos.h"
+
+int	ft_strlen(char *str)
+{
+	int	i;
+
+	i = 0;
+	if (str == NULL)
+		return (0);
+	while (str[i])
+		i++;
+	return (i);
+}
 
 int	ft_is_dead(t_philo *philo, int i)
 {
-	struct timeval time;
-	long int die;
-	
+	struct timeval	time;
+	long int		die;
+
 	if (gettimeofday(&time, NULL) != 0)
 		return (-1);
-	pthread_mutex_lock(&philo[i].t_l_eat);
-	if (philo[i].data->t_die < ((time.tv_sec * 1000 + time.tv_usec / 1000) - philo[i].t_last_eat))
+	pthread_mutex_lock(&philo[i].m_l_eat);
+	if (philo[i].data->t_die < ((time.tv_sec * 1000 + time.tv_usec / 1000)
+			- philo[i].t_last_eat))
 	{
-		pthread_mutex_unlock(&philo[i].t_l_eat);
+		pthread_mutex_unlock(&philo[i].m_l_eat);
+		pthread_mutex_lock(&philo[i].data->m_live);
 		philo->data->live = 0;
+		pthread_mutex_unlock(&philo[i].data->m_live);
 		die = (time.tv_sec * 1000 + time.tv_usec / 1000) - philo->data->t_start;
-		pthread_mutex_lock(&philo->data->writing);
+		pthread_mutex_lock(&philo->data->m_writing);
 		printf("%ld %ld died\n", die, philo[i].id);
-		pthread_mutex_unlock(&philo->data->writing);
+		pthread_mutex_unlock(&philo->data->m_writing);
 		return (1);
 	}
 	else
-		pthread_mutex_unlock(&philo[i].t_l_eat);
+		pthread_mutex_unlock(&philo[i].m_l_eat);
 	return (0);
+}
+
+void	ft_eaten(t_philo *philo, long int *i, long int *eat)
+{
+	pthread_mutex_lock(&philo[*i].m_nb_eaten);
+	if (philo[*i].nb_eaten == philo->data->nb_eat)
+		(*eat)++;
+	pthread_mutex_unlock(&philo[*i].m_nb_eaten);
 }
 
 int	ft_monitor(t_philo *philo)
@@ -48,14 +71,9 @@ int	ft_monitor(t_philo *philo)
 		while (i <= philo->data->nb_philo)
 		{
 			ret = ft_is_dead(philo, i);
-			if (ret == 1)
-				return (1);
-			else if (ret == -1)
-				return (-1);
-			pthread_mutex_lock(&philo->t_l_eat);
-			if (philo[i].nb_eaten == philo->data->nb_eat)
-				eat++;
-			pthread_mutex_unlock(&philo->t_l_eat);
+			if (ret != 0)
+				return (ret);
+			ft_eaten(philo, &i, &eat);
 			i++;
 		}
 		if (philo->data->nb_philo == eat)
@@ -63,7 +81,7 @@ int	ft_monitor(t_philo *philo)
 			philo->data->msg = ft_strdup("All philos have eaten enough !");
 			return (2);
 		}
-		// usleep(400);
+		usleep(400);
 	}
 	return (0);
 }

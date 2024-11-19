@@ -6,43 +6,24 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/07 11:13:46 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/12 14:56:51 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/19 14:42:48 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_philos.h"
-
-int	ft_strlen(char *str)
-{
-	int	i;
-
-	i = 0;
-	if (str == NULL)
-		return (0);
-	while (str[i])
-		i++;
-	return (i);
-}
-
-void	ft_putstr_fd(char *s, int fd)
-{
-	if (!s)
-		return ;
-	write(fd, s, ft_strlen(s));
-}
+#include "philos.h"
 
 int	ft_isdigit(char n)
 {
 	if (n >= '0' && n <= '9')
 		return (1);
-	return (0);	
+	return (0);
 }
 
 int	ft_atoi(char *str)
 {
-	int		i;
-	int		isnegative;
-	int		result;
+	int	i;
+	int	isnegative;
+	int	result;
 
 	i = 0;
 	isnegative = 1;
@@ -55,7 +36,7 @@ int	ft_atoi(char *str)
 	while (str[i] != '\0' && (str[i] == ' ' || (str[i] >= 9 && str[i] <= 13)))
 		i++;
 	if (str[i] != '\0' && (str[i] == '-' || str[i] == '+'))
-		if (str[i++] == '-' )
+		if (str[i++] == '-')
 			isnegative *= -1;
 	while (str[i] != '\0' && str[i] >= '0' && str[i] <= '9')
 		result = result * 10 + (str[i++] - 48);
