@@ -62,5 +62,6 @@ int		ft_log(t_philo *philo, struct timeval time, char *str);
 int		ft_sleep(t_philo *philo);
 int		ft_think(t_philo *philo);
 void	ft_unlock(t_philo *philo);
+void	ft_destroy(t_philo *philo);
 
 #endif

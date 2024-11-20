@@ -6,11 +6,25 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/12 11:05:27 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/19 15:17:03 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/20 12:05:54 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philos.h"
+
+void	ft_destroy(t_philo *philo)
+{
+	int	i;
+
+	i = 1;
+	while (i <= philo->data->nb_philo)
+	{
+		pthread_mutex_destroy(&philo[i].l_fork);
+		pthread_mutex_destroy(&philo[i].m_l_eat);
+		pthread_mutex_destroy(&philo[i].m_nb_eaten);
+		i++;
+	}
+}
 
 int	ft_strlen(char *str)
 {

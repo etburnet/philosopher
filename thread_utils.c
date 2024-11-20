@@ -6,7 +6,7 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/19 14:34:20 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/19 14:43:09 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/20 12:05:17 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,11 +48,12 @@ int	ft_log(t_philo *philo, struct timeval time, char *str)
 {
 	char	*itoa;
 
+	pthread_mutex_lock(&philo->data->m_writing);
 	pthread_mutex_lock(&philo->data->m_live);
 	if (philo->data->live == 0)
-		return (pthread_mutex_unlock(&philo->data->m_live), 1);
+		return (pthread_mutex_unlock(&philo->data->m_live),
+			pthread_mutex_unlock(&philo->data->m_writing), 1);
 	pthread_mutex_unlock(&philo->data->m_live);
-	pthread_mutex_lock(&philo->data->m_writing);
 	itoa = ft_itoa((time.tv_sec * 1000 + time.tv_usec / 1000)
 			- philo->data->t_start);
 	if (itoa == NULL)

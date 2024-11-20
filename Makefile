@@ -12,7 +12,7 @@
 
 NAME = philos
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -pthread
+CFLAGS = -Wall -Wextra -Werror -pthread -g3
 SRCS = main.c philos_utils.c thread.c monitor.c thread_utils.c 
 OBJS = $(SRCS:.c=.o)
 HEADERS = philos.h

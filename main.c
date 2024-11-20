@@ -71,6 +71,7 @@ int	ft_init_philos(t_philo *philo)
 			philo[i].r_fork = &philo[i - 1].l_fork;
 		pthread_mutex_init(&philo[i].l_fork, NULL);
 		pthread_mutex_init(&philo[i].m_l_eat, NULL);
+		pthread_mutex_init(&philo[i].m_nb_eaten, NULL);
 		philo[i].fork_status = 0;
 		philo[i].nb_eaten = 0;
 		philo[i].t_last_eat = (start.tv_sec * 1000 + start.tv_usec / 1000);
@@ -100,19 +101,15 @@ int	ft_thread_mon(t_philo *philo)
 	{
 		if (pthread_join(philo[i].thread, NULL) != 0)
 			return (free(philo->data), -1);
-		if (i < 1)
-			pthread_mutex_destroy(&philo[i - 1].l_fork);
-		pthread_mutex_destroy(&philo[i].m_l_eat);
-		pthread_mutex_destroy(&philo[i].m_nb_eaten);
 		i++;
 	}
-	pthread_mutex_destroy(&philo[i - 1].l_fork);
+	ft_destroy(philo);
 	return (ret);
 }
 
 int	main(int argc, char *argv[])
 {
-	t_philo			philo[200];
+	t_philo			philo[201];
 	int				ret;
 	struct timeval	time;
 
