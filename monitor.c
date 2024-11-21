@@ -6,7 +6,7 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/12 11:05:27 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/20 12:05:54 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/21 17:57:56 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,22 +40,20 @@ int	ft_strlen(char *str)
 
 int	ft_is_dead(t_philo *philo, int i)
 {
-	struct timeval	time;
+	long long		time;
 	long int		die;
 
-	if (gettimeofday(&time, NULL) != 0)
-		return (-1);
+	time = ft_get_time();
 	pthread_mutex_lock(&philo[i].m_l_eat);
-	if (philo[i].data->t_die < ((time.tv_sec * 1000 + time.tv_usec / 1000)
-			- philo[i].t_last_eat))
+	if (philo[i].data->t_die < (time - philo[i].t_last_eat))
 	{
 		pthread_mutex_unlock(&philo[i].m_l_eat);
 		pthread_mutex_lock(&philo[i].data->m_live);
 		philo->data->live = 0;
 		pthread_mutex_unlock(&philo[i].data->m_live);
-		die = (time.tv_sec * 1000 + time.tv_usec / 1000) - philo->data->t_start;
+		die = time - philo->data->t_start;
 		pthread_mutex_lock(&philo->data->m_writing);
-		printf("%ld %ld died\n", die, philo[i].id);
+		printf("%ld %d died\n", die, philo[i].id);
 		pthread_mutex_unlock(&philo->data->m_writing);
 		return (1);
 	}
@@ -92,10 +90,10 @@ int	ft_monitor(t_philo *philo)
 		}
 		if (philo->data->nb_philo == eat)
 		{
-			philo->data->msg = ft_strdup("All philos have eaten enough !");
+			printf("All philos have eaten enough !\n");
 			return (2);
 		}
-		usleep(8000);
+		usleep(4000);
 	}
 	return (0);
 }

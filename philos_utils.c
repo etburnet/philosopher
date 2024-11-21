@@ -6,7 +6,7 @@
 /*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/07 11:13:46 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/19 14:42:48 by eburnet          ###   ########.fr       */
+/*   Updated: 2024/11/21 16:43:25 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,28 +19,13 @@ int	ft_isdigit(char n)
 	return (0);
 }
 
-int	ft_atoi(char *str)
+int	ft_is_live(t_philo *philo)
 {
-	int	i;
-	int	isnegative;
-	int	result;
-
-	i = 0;
-	isnegative = 1;
-	result = 0;
-	while (ft_isdigit(str[i]))
-		i++;
-	if (!ft_isdigit(str[i]) && str[i] != '\0' && str[i] != '+')
-		return (-1);
-	i = 0;
-	while (str[i] != '\0' && (str[i] == ' ' || (str[i] >= 9 && str[i] <= 13)))
-		i++;
-	if (str[i] != '\0' && (str[i] == '-' || str[i] == '+'))
-		if (str[i++] == '-')
-			isnegative *= -1;
-	while (str[i] != '\0' && str[i] >= '0' && str[i] <= '9')
-		result = result * 10 + (str[i++] - 48);
-	return (result * isnegative);
+	pthread_mutex_lock(&philo->data->m_live);
+	if (philo->data->live == 1)
+		return (pthread_mutex_unlock(&philo->data->m_live), 1);
+	else
+		return (pthread_mutex_unlock(&philo->data->m_live), 0);
 }
 
 char	*ft_strdup(const char *s)

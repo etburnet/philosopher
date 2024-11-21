@@ -2,14 +2,11 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+
-	+:+     */
-/*   By: eburnet <eburnet@student.42.fr>            +#+  +:+
-	+#+        */
-/*                                                +#+#+#+#+#+
-	+#+           */
-/*   Created: 2024/11/12 13:02:25 by eburnet           #+#    #+#             */
-/*   Updated: 2024/11/12 13:02:25 by eburnet          ###   ########.fr       */
+/*                                                    +:+ +:+         +:+     */
+/*   By: eburnet <eburnet@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/11/21 17:59:59 by eburnet           #+#    #+#             */
+/*   Updated: 2024/11/21 17:59:59 by eburnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +20,7 @@ void	ft_init_data(t_philo *philo)
 				+ philo->data->t_sleep)) / 2;
 	if (philo->data->t_think < 0)
 		philo->data->t_think = 1;
+	philo->data->live = 1;
 }
 
 int	ft_check_args(int argc, char **argv, t_philo *philo)
@@ -50,19 +48,15 @@ int	ft_check_args(int argc, char **argv, t_philo *philo)
 	else
 		philo->data->nb_eat = -1;
 	ft_init_data(philo);
-	philo->data->live = 1;
 	return (0);
 }
 
 int	ft_init_philos(t_philo *philo)
 {
 	int				i;
-	struct timeval	start;
 
 	i = 1;
-	if (gettimeofday(&start, NULL) != 0)
-		return (1);
-	philo->data->t_start = (start.tv_sec * 1000 + start.tv_usec / 1000);
+	philo->data->t_start = ft_get_time();
 	while (i <= philo->data->nb_philo)
 	{
 		philo[i].data = philo->data;
@@ -74,7 +68,7 @@ int	ft_init_philos(t_philo *philo)
 		pthread_mutex_init(&philo[i].m_nb_eaten, NULL);
 		philo[i].fork_status = 0;
 		philo[i].nb_eaten = 0;
-		philo[i].t_last_eat = (start.tv_sec * 1000 + start.tv_usec / 1000);
+		philo[i].t_last_eat = philo->data->t_start;
 		i++;
 	}
 	philo[1].r_fork = &philo[philo->data->nb_philo].l_fork;
@@ -111,10 +105,7 @@ int	main(int argc, char *argv[])
 {
 	t_philo			philo[201];
 	int				ret;
-	struct timeval	time;
 
-	if (gettimeofday(&time, NULL) != 0)
-		return (1);
 	philo->data = malloc(sizeof(t_data));
 	if (philo->data == NULL)
 		return (3);
@@ -123,13 +114,6 @@ int	main(int argc, char *argv[])
 	if (ft_init_philos(philo) != 0)
 		return (free(philo->data), 1);
 	ret = ft_thread_mon(philo);
-	if (ret == 2)
-	{
-		pthread_mutex_lock(&philo->data->m_writing);
-		printf("%s\n", philo->data->msg);
-		pthread_mutex_unlock(&philo->data->m_writing);
-		free(philo->data->msg);
-	}
 	pthread_mutex_destroy(&philo->data->m_live);
 	pthread_mutex_destroy(&philo->data->m_writing);
 	return (free(philo->data), ret);
